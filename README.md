@@ -1,5 +1,7 @@
 # papertrail-downloader
 
+[![Rust](https://github.com/ndelvalle/papertrail-downloader/workflows/Rust/badge.svg?branch=master)](https://github.com/ndelvalle/papertrail-downloader/actions?query=workflow%3ARust)
+
 `papertrail-downloader` is a tool to download [Papertrail](https://www.papertrail.com/) archive logs. Especially useful when downloading a large number of archives.
 On a Google Cloud VM this tool downloads around 7x faster than the papertrail [suggested approach](https://help.papertrailapp.com/kb/how-it-works/permanent-log-archives/#download-a-large-number-of-archives) because `papertrail-downloader` download logs in parallel.
 
