@@ -7,7 +7,7 @@ pub fn ask<'a, 'b>() -> clap::App<'a, 'b> {
             clap::Arg::with_name("start-date")
                 .short("s")
                 .long("start-date")
-                .help("Start Date using 'YYYY-MM-DD' format")
+                .help("Start date using 'YYYY-MM-DD' format")
                 .takes_value(true)
                 .required(true),
         )
@@ -15,23 +15,23 @@ pub fn ask<'a, 'b>() -> clap::App<'a, 'b> {
             clap::Arg::with_name("end-date")
                 .short("e")
                 .long("end-date")
-                .help("end Date using 'YYYY-MM-DD' format")
+                .help("End date using 'YYYY-MM-DD' format")
                 .takes_value(true)
                 .required(true),
         )
         .arg(
             clap::Arg::with_name("api-token")
-                .short("a")
+                .short("t")
                 .long("api-token")
                 .help("Papertrail API token")
                 .takes_value(true)
                 .required(true),
         )
         .arg(
-            clap::Arg::with_name("output-folder")
-                .short("c")
-                .long("output-folder")
-                .help("Output folder to store downloaded logs")
+            clap::Arg::with_name("output-dir")
+                .short("o")
+                .long("output-dir")
+                .help("Output directory to store downloaded logs")
                 .takes_value(true)
                 .default_value("./"),
         )
