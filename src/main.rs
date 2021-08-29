@@ -54,7 +54,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build()
         .expect("Failed to create HTTP client");
 
-    let mut date = start_date.clone();
+    let mut date = start_date;
     let mut tasks = vec![];
 
     while date < end_date {
@@ -70,7 +70,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         };
 
         tasks.push(task);
-        date = date + chrono::Duration::hours(1);
+        date += chrono::Duration::hours(1);
     }
 
     futures::stream::iter(tasks)
