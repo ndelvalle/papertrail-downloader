@@ -1,12 +1,15 @@
 use chrono::NaiveDate;
 use chrono::NaiveDateTime;
-use futures::stream::StreamExt;
-use indicatif::ProgressBar;
-use reqwest::Client;
-use std::sync::Arc;
-use std::sync::Mutex;
-use tokio::fs::File;
-use tokio::io::AsyncWriteExt;
+use indicatif::{ProgressBar, ProgressStyle};
+use rayon::iter::IntoParallelRefIterator;
+use rayon::iter::ParallelIterator;
+use reqwest::blocking::Client as ReqwestClient;
+use std::fs::create_dir_all;
+use std::fs::File;
+use std::io::Write;
+
+// Papertrail documentation about permanent log archives.
+// https://www.papertrail.com/help/permanent-log-archives/
 
 mod cli;
 
@@ -16,12 +19,11 @@ const PAPERTRAIL_URL: &str = "https://papertrailapp.com/api/v1";
 // https://www.papertrail.com/blog/introducing-syslog-ratelimits/
 const PAPERTRAIL_PARALLEL_REQUESTS: usize = 10;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches = cli::ask().get_matches();
 
     let token = matches
-        .value_of("api-token")
+        .value_of("token")
         .expect("API token is a required attribute")
         .to_owned();
 
@@ -48,68 +50,85 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .unwrap(); // Safe to unwrap value, has clap required attribute.
 
-    let total_logs_count = (end_date.timestamp() - start_date.timestamp()) / 60 / 60;
-    let progress_bar = Arc::new(Mutex::new(ProgressBar::new(total_logs_count as u64)));
-    let client = Client::builder()
+    create_dir_all(&output_dir).expect("Failed to create output directory");
+
+    let logs_count = (end_date.timestamp() - start_date.timestamp()) / 60 / 60;
+
+    let progress_bar = ProgressBar::new(logs_count as u64);
+    progress_bar.set_style(ProgressStyle::default_bar().template(
+        "{spinner} [{elapsed_precise}] [{wide_bar}] {pos}/{len} ({per_sec}, ETA: {eta})",
+    ));
+
+    let reqwest_client = reqwest::blocking::Client::new();
+    let thread_pool = rayon::ThreadPoolBuilder::new()
+        .num_threads(PAPERTRAIL_PARALLEL_REQUESTS)
         .build()
-        .expect("Failed to create HTTP client");
+        .expect("Failed to create thread pool");
 
-    let mut date = start_date;
-    let mut tasks = vec![];
+    let dates = get_dates(start_date, end_date);
 
-    while date < end_date {
-        let token = token.clone();
-        let output = output_dir.clone();
-        let client = client.clone();
-        let progress_bar = progress_bar.clone();
+    thread_pool.install(|| {
+        dates
+            .par_iter()
+            .inspect(|_| progress_bar.inc(1))
+            .for_each(|date| download_log(&reqwest_client, &token, date, &output_dir));
+    });
 
-        let task = async move {
-            download_log(client, token, date, output).await;
-            let progress_bar = progress_bar.lock().unwrap();
-            progress_bar.inc(1);
-        };
-
-        tasks.push(task);
-        date += chrono::Duration::hours(1);
-    }
-
-    futures::stream::iter(tasks)
-        .buffer_unordered(PAPERTRAIL_PARALLEL_REQUESTS)
-        .collect::<()>()
-        .await;
-
-    let progress_bar = progress_bar.lock().unwrap();
     progress_bar.finish();
     Ok(())
 }
 
-async fn download_log(client: Client, token: String, date: NaiveDateTime, output: String) {
+fn download_log(
+    reqwest_client: &ReqwestClient,
+    token: &String,
+    date: &NaiveDateTime,
+    output_dir: &String,
+) {
     let ymdh = to_ymdh(date);
-    let url = create_url(ymdh);
+    let url = create_url(&ymdh);
 
-    let mut stream = client
+    let response = reqwest_client
         .get(&url)
         .header("X-Papertrail-Token", token)
         .send()
-        .await
-        .expect("Failed to create the HTTP request")
-        .bytes_stream();
+        .expect("Failed to create the HTTP request");
 
-    let path = format!("{}/{}.tsv.gz", output, date.clone());
-    let mut file = File::create(path).await.expect("Failed to create log file");
-
-    while let Some(item) = stream.next().await {
-        let chunk = item.expect("Failed to read log stream chunk");
-        file.write_all(&chunk)
-            .await
-            .expect("Failed to write log chunk to log file");
+    if !response.status().is_success() {
+        let error = response.text().expect("Failed to read response error body");
+        eprintln!(
+            "Failed to download log for date {}. Error: {}.\n",
+            &date, error
+        );
+        return;
     }
+
+    let bytes = response
+        .bytes()
+        .expect("Failed to read bytes from HTTP response");
+
+    let path = format!("{}/{}.tsv.gz", output_dir, date.clone());
+    let mut file = File::create(path).expect("Failed to create log file");
+
+    file.write_all(bytes.as_ref())
+        .expect("Failed to write log bytes to file");
 }
 
-fn create_url(date: String) -> String {
+fn create_url(date: &String) -> String {
     format!("{}/archives/{}/download", PAPERTRAIL_URL, date)
 }
 
-fn to_ymdh(date: NaiveDateTime) -> String {
+fn to_ymdh(date: &NaiveDateTime) -> String {
     date.format("%Y-%m-%d-%H").to_string()
+}
+
+fn get_dates(start_date: NaiveDateTime, end_date: NaiveDateTime) -> Vec<NaiveDateTime> {
+    let mut date = start_date;
+    let mut dates = vec![];
+
+    while date < end_date {
+        dates.push(date);
+        date += chrono::Duration::hours(1);
+    }
+
+    dates
 }
