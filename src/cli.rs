@@ -20,10 +20,10 @@ pub fn ask<'a, 'b>() -> clap::App<'a, 'b> {
                 .required(true),
         )
         .arg(
-            clap::Arg::with_name("api-token")
+            clap::Arg::with_name("token")
                 .short("t")
-                .long("api-token")
-                .help("Papertrail API token")
+                .long("token")
+                .help("Papertrail API token from https://papertrailapp.com/account/profile")
                 .takes_value(true)
                 .required(true),
         )
