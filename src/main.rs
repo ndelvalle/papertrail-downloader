@@ -80,9 +80,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 fn download_log(
     reqwest_client: &ReqwestClient,
-    token: &String,
+    token: &str,
     date: &NaiveDateTime,
-    output_dir: &String,
+    output_dir: &str,
 ) {
     let ymdh = to_ymdh(date);
     let url = create_url(&ymdh);
@@ -113,7 +113,7 @@ fn download_log(
         .expect("Failed to write log bytes to file");
 }
 
-fn create_url(date: &String) -> String {
+fn create_url(date: &str) -> String {
     format!("{}/archives/{}/download", PAPERTRAIL_URL, date)
 }
 
