@@ -20,7 +20,11 @@ const PAPERTRAIL_URL: &str = "https://papertrailapp.com/api/v1";
 const PAPERTRAIL_PARALLEL_REQUESTS: usize = 10;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let matches = cli::ask().get_matches();
+    let now = chrono::Local::now();
+    let now = now.format("%Y-%m-%d").to_string();
+
+    let default_end_date = now;
+    let matches = cli::ask(default_end_date.as_str()).get_matches();
 
     let token = matches
         .value_of("token")
@@ -48,7 +52,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .map(|date| date.and_hms(00, 00, 00))
                 .expect("Failed to parse end date")
         })
-        .unwrap(); // Safe to unwrap value, has clap required attribute.
+        .unwrap(); // Safe to unwrap value, has clap default value.
 
     create_dir_all(&output_dir).expect("Failed to create output directory");
 
