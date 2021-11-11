@@ -1,4 +1,4 @@
-pub fn ask<'a, 'b>() -> clap::App<'a, 'b> {
+pub fn ask<'a, 'b>(default_end_date: &'a str) -> clap::App<'a, 'b> {
     clap::App::new(env!("CARGO_PKG_NAME"))
         .version(env!("CARGO_PKG_VERSION"))
         .about(env!("CARGO_PKG_DESCRIPTION"))
@@ -17,7 +17,7 @@ pub fn ask<'a, 'b>() -> clap::App<'a, 'b> {
                 .long("end-date")
                 .help("End date using 'YYYY-MM-DD' format")
                 .takes_value(true)
-                .required(true),
+                .default_value(default_end_date),
         )
         .arg(
             clap::Arg::with_name("token")
