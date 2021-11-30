@@ -11,7 +11,7 @@ repository = "https://github.com/ndelvalle/papertrail-downloader"
 
 [dependencies]
 chrono = "0.4.19"
-clap = "2.33.3"
+clap = "2.34.0"
 futures = "0.3.18"
 reqwest = { version = "0.11.5", features = ["blocking"] }
 shellexpand = "2.1.0"
