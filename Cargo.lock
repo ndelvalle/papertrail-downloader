@@ -105,14 +105,15 @@ dependencies = [
 
 [[package]]
 name = "console"
-version = "0.14.1"
+version = "0.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3993e6445baa160675931ec041a5e03ca84b9c6e32a056150d3aa2bdda0a1f45"
+checksum = "c050367d967ced717c04b65d8c619d863ef9292ce0c5760028655a2fb298718c"
 dependencies = [
  "encode_unicode",
  "lazy_static",
  "libc",
  "terminal_size",
+ "unicode-width",
  "winapi",
 ]
 
@@ -490,14 +491,14 @@ dependencies = [
 
 [[package]]
 name = "indicatif"
-version = "0.16.2"
+version = "0.17.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d207dc617c7a380ab07ff572a6e52fa202a2a8f355860ac9c38e23f8196be1b"
+checksum = "4295cbb7573c16d310e99e713cf9e75101eb190ab31fccd35f2d2691b4352b19"
 dependencies = [
  "console",
- "lazy_static",
  "number_prefix",
- "regex",
+ "portable-atomic",
+ "unicode-width",
 ]
 
 [[package]]
@@ -793,6 +794,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3831453b3449ceb48b6d9c7ad7c96d5ea673e9b470a1dc578c2ce6521230884c"
 
 [[package]]
+name = "portable-atomic"
+version = "0.3.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "15eb2c6e362923af47e13c23ca5afb859e83d54452c55b0b9ac763b8f7c1ac16"
+
+[[package]]
 name = "ppv-lite86"
 version = "0.2.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -898,21 +905,6 @@ dependencies = [
  "getrandom",
  "redox_syscall",
 ]
-
-[[package]]
-name = "regex"
-version = "1.5.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d07a8629359eb56f1e2fb1652bb04212c072a87ba68546a04065d525673ac461"
-dependencies = [
- "regex-syntax",
-]
-
-[[package]]
-name = "regex-syntax"
-version = "0.6.25"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
 
 [[package]]
 name = "remove_dir_all"
