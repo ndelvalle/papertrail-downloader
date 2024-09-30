@@ -5,7 +5,6 @@
 `papertrail-downloader` is a tool to download [Papertrail](https://www.papertrail.com/) archive logs. Especially useful when downloading a large number of archives.
 This program is faster than the papertrail [suggested approach](https://help.papertrailapp.com/kb/how-it-works/permanent-log-archives/#download-a-large-number-of-archives) because `papertrail-downloader` download logs in parallel.
 
-
 ## Install
 
 ### Cargo
@@ -22,6 +21,12 @@ and add executable permissions:
 ```
 wget -O papertrail-downloader "https://github.com/ndelvalle/papertrail-downloader/releases/download/v0.2.0/papertrail-downloader-x86-64-linux"
 chmod +x papertrail-downloader
+```
+
+### Nix
+
+```
+nix run github:ndelvalle/papertrail-downloader -- [OPTIONS]
 ```
 
 ## Use
